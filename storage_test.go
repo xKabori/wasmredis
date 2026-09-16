@@ -1,19 +1,9 @@
 package wasmredis
 
-// =============================================================================
-// TESTS DU FICHIER 3/6 — à lire juste après storage.go.
-//
-// On teste ici le stockage SEUL, sans moteur : des octets entrent, des octets
-// sortent. Les trois comportements à vérifier sont ceux dont la persistance
-// dépendra : un fichier absent au premier démarrage ne doit pas être une
-// erreur, l'AOF doit s'ajouter à la fin sans rien écraser, et le snapshot doit
-// au contraire tout remplacer.
-// =============================================================================
-
 import "testing"
 
 func TestFileStorageMissingFiles(t *testing.T) {
-	s := NewFileStorage(t.TempDir()) // dossier vide : aucun fichier n'existe
+	s := NewFileStorage(t.TempDir())
 
 	aof, err := s.ReadAOF()
 	if err != nil {
@@ -32,8 +22,6 @@ func TestFileStorageMissingFiles(t *testing.T) {
 	}
 }
 
-// L'AOF s'ajoute en bout de fichier : la première ligne doit survivre à la
-// seconde écriture.
 func TestFileStorageAppendAOF(t *testing.T) {
 	s := NewFileStorage(t.TempDir())
 
@@ -76,7 +64,6 @@ func TestFileStorageClearAOF(t *testing.T) {
 	}
 }
 
-// Le snapshot, lui, écrase : seule la dernière photo compte.
 func TestFileStorageSnapshot(t *testing.T) {
 	s := NewFileStorage(t.TempDir())
 

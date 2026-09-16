@@ -1,17 +1,5 @@
 package wasmredis
 
-// =============================================================================
-// TESTS DU FICHIER 2/6 — à lire juste après engine.go.
-//
-// Deux niveaux de tests ici :
-//   - les méthodes directes (Set, Get, Delete) ;
-//   - le bout-à-bout avec Run, qui part d'une string brute.
-//
-// t.TempDir() crée un dossier temporaire, supprimé automatiquement à la fin du
-// test. Le moteur a besoin d'un Storage même quand on ne teste que la RAM :
-// on lui en donne un qui écrit dans ce dossier jetable.
-// =============================================================================
-
 import (
 	"errors"
 	"testing"
@@ -25,7 +13,6 @@ func TestEngineSetGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("erreur inattendue : %v", err)
 	}
-	// %q affiche une string entre guillemets, ce qui rend les espaces visibles.
 	if value != "matt" {
 		t.Errorf("obtenu %q, attendu %q", value, "matt")
 	}
@@ -65,8 +52,6 @@ func TestEngineDelete(t *testing.T) {
 	}
 }
 
-// --- Bout-à-bout : parse + exécution en une seule méthode ---------------------
-
 func TestRunSetThenGet(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 
@@ -94,7 +79,6 @@ func TestRunDeleteThenGet(t *testing.T) {
 	}
 }
 
-// Run doit faire remonter l'erreur du parser sans la transformer.
 func TestRunParseError(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 

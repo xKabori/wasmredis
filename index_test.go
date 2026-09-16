@@ -1,18 +1,5 @@
 package wasmredis
 
-// =============================================================================
-// TESTS DU FICHIER 5/6 — à lire juste après index.go.
-//
-// Le piège de l'index inversé n'est pas de le remplir, mais de le tenir à jour :
-// après un écrasement ou une suppression, l'ancienne valeur ne doit plus
-// pointer vers la clé. C'est ce que vérifient TestGetEqualsAfterOverwrite et
-// TestGetEqualsAfterDelete.
-//
-// slices.Equal compare deux slices élément par élément (on ne peut pas utiliser
-// == sur des slices en Go). Les résultats sont triés par GetEquals et
-// GetContains, donc l'ordre attendu est toujours l'ordre alphabétique.
-// =============================================================================
-
 import (
 	"slices"
 	"testing"
@@ -21,7 +8,7 @@ import (
 func TestGetEquals(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 	e.Set("alice", "30")
-	e.Set("bob", "30") // deux clés peuvent porter la même valeur
+	e.Set("bob", "30")
 	e.Set("carol", "40")
 
 	got := e.GetEquals("30")
@@ -41,7 +28,6 @@ func TestGetEqualsNoMatch(t *testing.T) {
 	}
 }
 
-// Après SET alice 40, l'index ne doit plus associer alice à 30.
 func TestGetEqualsAfterOverwrite(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 	e.Set("alice", "30")
@@ -70,9 +56,6 @@ func TestGetEqualsAfterDelete(t *testing.T) {
 		t.Errorf("obtenu %v, attendu %v", got, want)
 	}
 
-	// Quand plus aucune clé ne porte la valeur, l'entrée disparaît de l'index.
-	// On regarde directement le champ privé, ce qui est possible depuis un test
-	// du même package.
 	e.Delete("bob")
 	_, found := e.index["30"]
 	if found {
@@ -80,7 +63,6 @@ func TestGetEqualsAfterDelete(t *testing.T) {
 	}
 }
 
-// contains cherche une sous-chaîne : matt et matteo correspondent, paris non.
 func TestGetContains(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 	e.Set("name", "matt")
@@ -94,7 +76,6 @@ func TestGetContains(t *testing.T) {
 	}
 }
 
-// Depuis une commande texte, les clés trouvées sont renvoyées une par ligne.
 func TestRunGetEquals(t *testing.T) {
 	e := NewEngine(NewFileStorage(t.TempDir()))
 	e.Run("SET alice 30")
@@ -115,7 +96,6 @@ func TestRunGetContains(t *testing.T) {
 	e.Run("SET name matt")
 	e.Run("SET city paris")
 
-	// En minuscules : le filtre est insensible à la casse, comme les commandes.
 	value, err := e.Run("get contains ari")
 	if err != nil {
 		t.Fatalf("erreur inattendue : %v", err)
@@ -125,8 +105,6 @@ func TestRunGetContains(t *testing.T) {
 	}
 }
 
-// L'index n'est jamais écrit sur le disque : il est reconstruit au restore, à
-// partir de la photo ET du journal. Ici alice vient du snapshot et bob de l'AOF.
 func TestIndexRebuiltAfterRestore(t *testing.T) {
 	dir := t.TempDir()
 
